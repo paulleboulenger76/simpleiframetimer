@@ -20,7 +20,7 @@
 
   /* ---- scène de référence : dimensions fixes, mise à l'échelle via JS ---- */
   #stage {
-    width: 300px;
+    width: 400px;
     height: 200px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
@@ -54,8 +54,8 @@
 
   /* ---- mode 1 : barre linéaire ---- */
   #view-bar { flex-direction: column; gap: 6px; }
-  #bar-display { font-size: 1.5em; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .bar-container { width: 220px; height: 8px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+  #bar-display { font-size: 2.1em; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bar-container { width: 300px; height: 10px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
   .bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #4f9dff, #2f6fed); border-radius: 999px; transition: width 1s linear; }
 
   /* ---- mode 2 : anneau ---- */
@@ -63,17 +63,17 @@
   #view-ring svg { transform: rotate(-90deg); }
   .ring-bg { stroke: #e5e7eb; }
   .ring-fill { stroke: url(#grad); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
-  #ring-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.15em; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #ring-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.55em; font-weight: 700; font-variant-numeric: tabular-nums; }
 
   /* ---- mode 3 : camembert plein ---- */
   #view-pie { position: relative; width: 100px; height: 100px; }
   #pie-disc { width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#2f6fed 0deg, #e5e7eb 0deg); transition: background 1s linear; }
-  #pie-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.15em; font-weight: 700; color: white; mix-blend-mode: difference; font-variant-numeric: tabular-nums; }
+  #pie-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.55em; font-weight: 700; color: white; mix-blend-mode: difference; font-variant-numeric: tabular-nums; }
 
   /* ---- mode 4 : points ---- */
   #view-dots { flex-direction: column; align-items: center; gap: 8px; }
-  #dots-display { font-size: 1.3em; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .dots-row { display: flex; gap: 4px; flex-wrap: wrap; max-width: 230px; justify-content: center; }
+  #dots-display { font-size: 1.8em; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dots-row { display: flex; gap: 6px; flex-wrap: wrap; max-width: 320px; justify-content: center; }
   .dot { width: 11px; height: 11px; border-radius: 50%; background: #e5e7eb; transition: background 0.3s; }
   .dot.on { background: #2f6fed; }
 
@@ -85,13 +85,13 @@
     background: #22c55e;
     transition: background 0.6s ease;
   }
-  #urgency-display { font-size: 1.15em; font-weight: 700; color: white; font-variant-numeric: tabular-nums; }
+  #urgency-display { font-size: 1.55em; font-weight: 700; color: white; font-variant-numeric: tabular-nums; }
   #urgency-note { font-size: 0.65em; color: #6b7280; }
 
   /* ---- mode 6 : compact ---- */
   #view-compact { flex-direction: column; align-items: center; gap: 4px; }
-  #compact-display { font-size: 1.4em; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
-  .compact-bar-container { width: 110px; height: 4px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+  #compact-display { font-size: 2em; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  .compact-bar-container { width: 160px; height: 5px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
   .compact-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #4f9dff, #2f6fed); border-radius: 999px; transition: width 1s linear; }
 
   /* ---- contrôles ---- */
@@ -364,7 +364,7 @@
 
   /* ---- mise à l'échelle du contenu selon la taille réelle de l'iframe ---- */
   const stage = document.getElementById("stage");
-  const REF_WIDTH = 300;
+  const REF_WIDTH = 400;
   const REF_HEIGHT = 200;
 
   function fitStage() {
