@@ -279,16 +279,16 @@
     else if (fraction > 0.2) { color = "#f59e0b"; note = "Ça se rapproche"; }
     else { color = "#ef4444"; note = "Presque fini !"; }
     urgencyCircle.style.background = color;
-    urgencyNote.textContent = remaining === 0 && !interval ? "Terminé !" : note;
+    urgencyNote.textContent = remaining === 0 && !interval ? "Fin !" : note;
 
     compactDisplay.textContent = text;
     compactBarFill.style.width = (fraction * 100) + "%";
 
     if (remaining === 0 && !interval && !isPaused) {
       [barDisplay, ringDisplay, pieDisplay, dotsDisplay, urgencyDisplay].forEach(el => {
-        el.textContent = "Terminé !";
+        el.textContent = "Fin !";
       });
-      compactDisplay.textContent = "Fini !";
+      compactDisplay.textContent = "Fin !";
     }
   }
 
