@@ -15,6 +15,398 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: #ffffff;
+    transition: background-color 0.5s ease;
+  }
+  body.finished {
+    background: #fde8e8;
+  }
+
+  /* ---- scène de référence : dimensions fixes, mise à l'échelle via JS ---- */
+  #stage {
+    width: 400px;
+    height: 200px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    gap: 2px;
+    transform-origin: center center;
+    flex-shrink: 0;
+  }
+
+  .mode-label {
+    font-size: 0.62em;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    height: 12px;
+    line-height: 12px;
+  }
+
+  /* ---- zone d'affichage commune, hauteur fixe ---- */
+  .view {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 106px;
+  }
+  .view.active { display: flex; }
+
+  /* ---- mode 1 : barre linéaire ---- */
+  #view-bar { flex-direction: column; gap: 6px; }
+  #bar-display { font-size: 2.1em; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bar-container { width: 300px; height: 10px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #4f9dff, #2f6fed); border-radius: 999px; transition: width 1s linear; }
+
+  /* ---- mode 2 : anneau ---- */
+  #view-ring { position: relative; width: 100px; height: 100px; }
+  #view-ring svg { transform: rotate(-90deg); }
+  .ring-bg { stroke: #e5e7eb; }
+  .ring-fill { stroke: url(#grad); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+  #ring-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.55em; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ---- mode 3 : camembert plein ---- */
+  #view-pie { position: relative; width: 100px; height: 100px; }
+  #pie-disc { width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#2f6fed 0deg, #e5e7eb 0deg); transition: background 1s linear; }
+  #pie-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.55em; font-weight: 700; color: white; mix-blend-mode: difference; font-variant-numeric: tabular-nums; }
+
+  /* ---- mode 4 : points ---- */
+  #view-dots { flex-direction: column; align-items: center; gap: 8px; }
+  #dots-display { font-size: 1.8em; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dots-row { display: flex; gap: 6px; flex-wrap: wrap; max-width: 320px; justify-content: center; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: #e5e7eb; transition: background 0.3s; }
+  .dot.on { background: #2f6fed; }
+
+  /* ---- mode 5 : urgence colorée ---- */
+  #view-urgency { flex-direction: column; align-items: center; gap: 6px; }
+  #urgency-circle {
+    width: 88px; height: 88px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #22c55e;
+    transition: background 0.6s ease;
+  }
+  #urgency-display { font-size: 1.55em; font-weight: 700; color: white; font-variant-numeric: tabular-nums; }
+  #urgency-note { font-size: 0.65em; color: #6b7280; }
+
+  /* ---- mode 6 : compact ---- */
+  #view-compact { flex-direction: column; align-items: center; gap: 4px; }
+  #compact-display { font-size: 2em; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  .compact-bar-container { width: 160px; height: 5px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+  .compact-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #4f9dff, #2f6fed); border-radius: 999px; transition: width 1s linear; }
+
+  /* ---- contrôles ---- */
+  .controls { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; justify-content: center; height: 46px; }
+  .field { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+  .field label { font-size: 0.75em; color: #6b7280; margin-bottom: 2px; font-weight: 600; }
+  input[type="number"] {
+    width: 48px; padding: 4px 4px;
+    border: 1px solid #d1d5db; border-radius: 6px;
+    font-size: 1.05em; text-align: center;
+  }
+  button {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; border-radius: 50%;
+    font-size: 1.15em; line-height: 1;
+    cursor: pointer; color: white;
+    padding: 0; flex-shrink: 0;
+  }
+  #startBtn { background: #2f6fed; }
+  #startBtn:hover { background: #2559c4; }
+  #startBtn.is-running { background: #f59e0b; }
+  #startBtn.is-running:hover { background: #d98708; }
+  #resetBtn { background: #9ca3af; }
+  #resetBtn:hover { background: #7d848f; }
+  #modeBtn { background: #6366f1; }
+  #modeBtn:hover { background: #4f46e5; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div class="mode-label" id="modeLabel">Barre de progression</div>
+
+  <!-- mode 1 -->
+  <div class="view active" id="view-bar">
+    <div id="bar-display">05:00</div>
+    <div class="bar-container"><div class="bar-fill" id="barFill"></div></div>
+  </div>
+
+  <!-- mode 2 -->
+  <div class="view" id="view-ring">
+    <svg width="100" height="100" viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4f9dff" />
+          <stop offset="100%" stop-color="#2f6fed" />
+        </linearGradient>
+      </defs>
+      <circle class="ring-bg" cx="50" cy="50" r="42" fill="none" stroke-width="8" />
+      <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="42" fill="none" stroke-width="8"
+        stroke-dasharray="263.9" stroke-dashoffset="0" />
+    </svg>
+    <div id="ring-display">05:00</div>
+  </div>
+
+  <!-- mode 3 -->
+  <div class="view" id="view-pie">
+    <div id="pie-disc"></div>
+    <div id="pie-display">05:00</div>
+  </div>
+
+  <!-- mode 4 -->
+  <div class="view" id="view-dots">
+    <div id="dots-display">05:00</div>
+    <div class="dots-row" id="dotsRow"></div>
+  </div>
+
+  <!-- mode 5 -->
+  <div class="view" id="view-urgency">
+    <div id="urgency-circle"><div id="urgency-display">05:00</div></div>
+    <div id="urgency-note">Temps confortable</div>
+  </div>
+
+  <!-- mode 6 -->
+  <div class="view" id="view-compact">
+    <div id="compact-display">05:00</div>
+    <div class="compact-bar-container"><div class="compact-bar-fill" id="compactBarFill"></div></div>
+  </div>
+
+  <div class="controls">
+    <div class="field">
+      <label for="minutesInput">Min</label>
+      <input type="number" id="minutesInput" value="5" min="0" max="180">
+    </div>
+    <div class="field">
+      <label for="secondsInput">Sec</label>
+      <input type="number" id="secondsInput" value="0" min="0" max="59">
+    </div>
+    <button id="startBtn" title="Démarrer">▶</button>
+    <button id="resetBtn" title="Réinitialiser">↻</button>
+    <button id="modeBtn" title="Changer d'affichage">⇄</button>
+  </div>
+
+</div>
+
+<script>
+  const modes = [
+    { id: "bar", label: "Barre de progression" },
+    { id: "ring", label: "Anneau" },
+    { id: "pie", label: "Camembert" },
+    { id: "dots", label: "Points" },
+    { id: "urgency", label: "Urgence colorée" },
+    { id: "compact", label: "Compact" }
+  ];
+  let modeIndex = 0;
+
+  const modeLabel = document.getElementById("modeLabel");
+  const startBtn = document.getElementById("startBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const modeBtn = document.getElementById("modeBtn");
+  const minutesInput = document.getElementById("minutesInput");
+  const secondsInput = document.getElementById("secondsInput");
+
+  function getDurationInSeconds() {
+    const m = Math.max(0, parseInt(minutesInput.value, 10) || 0);
+    const s = Math.min(59, Math.max(0, parseInt(secondsInput.value, 10) || 0));
+    const total = m * 60 + s;
+    return total > 0 ? total : 5; // évite un timer de 0 seconde par erreur de saisie
+  }
+
+  const barDisplay = document.getElementById("bar-display");
+  const barFill = document.getElementById("barFill");
+  const ringDisplay = document.getElementById("ring-display");
+  const ringFill = document.getElementById("ringFill");
+  const pieDisplay = document.getElementById("pie-display");
+  const pieDisc = document.getElementById("pie-disc");
+  const dotsDisplay = document.getElementById("dots-display");
+  const dotsRow = document.getElementById("dotsRow");
+  const urgencyDisplay = document.getElementById("urgency-display");
+  const urgencyCircle = document.getElementById("urgency-circle");
+  const urgencyNote = document.getElementById("urgency-note");
+  const compactDisplay = document.getElementById("compact-display");
+  const compactBarFill = document.getElementById("compactBarFill");
+
+  const CIRCUMFERENCE = 2 * Math.PI * 42; // r = 42
+  ringFill.setAttribute("stroke-dasharray", CIRCUMFERENCE);
+
+  const DOT_COUNT = 12;
+  for (let i = 0; i < DOT_COUNT; i++) {
+    const d = document.createElement("div");
+    d.className = "dot";
+    d.dataset.index = i;
+    dotsRow.appendChild(d);
+  }
+  const dotEls = Array.from(dotsRow.children);
+
+  let totalSeconds = 5 * 60;
+  let remaining = totalSeconds;
+  let interval = null;
+  let isPaused = false;
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return String(m).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+  }
+
+  function updateDisplay() {
+    const text = formatTime(remaining);
+    const fraction = totalSeconds > 0 ? remaining / totalSeconds : 0;
+
+    barDisplay.textContent = text;
+    barFill.style.width = (fraction * 100) + "%";
+
+    ringDisplay.textContent = text;
+    ringFill.style.strokeDashoffset = CIRCUMFERENCE * (1 - fraction);
+
+    pieDisplay.textContent = text;
+    pieDisc.style.background = `conic-gradient(#2f6fed ${fraction * 360}deg, #e5e7eb 0deg)`;
+
+    dotsDisplay.textContent = text;
+    const onCount = Math.round(fraction * DOT_COUNT);
+    dotEls.forEach((dot, i) => {
+      dot.classList.toggle("on", i < onCount);
+    });
+
+    urgencyDisplay.textContent = text;
+    let color, note;
+    if (fraction > 0.5) { color = "#22c55e"; note = "Temps confortable"; }
+    else if (fraction > 0.2) { color = "#f59e0b"; note = "Ça se rapproche"; }
+    else { color = "#ef4444"; note = "Presque fini !"; }
+    urgencyCircle.style.background = color;
+    urgencyNote.textContent = remaining === 0 && !interval ? "Terminé !" : note;
+
+    compactDisplay.textContent = text;
+    compactBarFill.style.width = (fraction * 100) + "%";
+
+    if (remaining === 0 && !interval && !isPaused) {
+      [barDisplay, ringDisplay, pieDisplay, dotsDisplay, urgencyDisplay].forEach(el => {
+        el.textContent = "Terminé !";
+      });
+      compactDisplay.textContent = "Fini !";
+    }
+  }
+
+  function tick() {
+    if (remaining > 0) {
+      remaining--;
+      updateDisplay();
+    } else {
+      clearInterval(interval);
+      interval = null;
+      isPaused = false;
+      startBtn.classList.remove("is-running");
+      startBtn.textContent = "▶";
+      startBtn.title = "Démarrer";
+      document.body.classList.add("finished");
+      updateDisplay();
+    }
+  }
+
+  function startTimer() {
+    if (interval) return;
+    if (!isPaused) {
+      totalSeconds = getDurationInSeconds();
+      remaining = totalSeconds;
+    }
+    isPaused = false;
+    document.body.classList.remove("finished");
+    minutesInput.disabled = true;
+    secondsInput.disabled = true;
+    startBtn.classList.add("is-running");
+    startBtn.textContent = "⏸";
+    startBtn.title = "Pause";
+    updateDisplay();
+    interval = setInterval(tick, 1000);
+  }
+
+  function pauseTimer() {
+    if (!interval) return;
+    clearInterval(interval);
+    interval = null;
+    isPaused = true;
+    startBtn.classList.remove("is-running");
+    startBtn.textContent = "▶";
+    startBtn.title = "Reprendre";
+  }
+
+  function toggleStartPause() {
+    if (interval) {
+      pauseTimer();
+    } else {
+      startTimer();
+    }
+  }
+
+  function resetTimer() {
+    clearInterval(interval);
+    interval = null;
+    isPaused = false;
+    document.body.classList.remove("finished");
+    totalSeconds = getDurationInSeconds();
+    remaining = totalSeconds;
+    minutesInput.disabled = false;
+    secondsInput.disabled = false;
+    startBtn.classList.remove("is-running");
+    startBtn.textContent = "▶";
+    startBtn.title = "Démarrer";
+    updateDisplay();
+  }
+
+  function switchMode() {
+    document.querySelector(".view.active").classList.remove("active");
+    modeIndex = (modeIndex + 1) % modes.length;
+    document.getElementById("view-" + modes[modeIndex].id).classList.add("active");
+    modeLabel.textContent = modes[modeIndex].label;
+  }
+
+  startBtn.addEventListener("click", toggleStartPause);
+  resetBtn.addEventListener("click", resetTimer);
+  modeBtn.addEventListener("click", switchMode);
+
+  /* ---- mise à l'échelle du contenu selon la taille réelle de l'iframe ---- */
+  const stage = document.getElementById("stage");
+  const REF_WIDTH = 400;
+  const REF_HEIGHT = 200;
+
+  function fitStage() {
+    const scale = Math.min(
+      window.innerWidth / REF_WIDTH,
+      window.innerHeight / REF_HEIGHT
+    );
+    stage.style.transform = "scale(" + scale + ")";
+  }
+
+  window.addEventListener("resize", fitStage);
+  window.addEventListener("load", fitStage);
+  fitStage();
+
+  updateDisplay();
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Timer multi-affichage</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
   }
 
